@@ -129,16 +129,22 @@ fun AndroidVSCodeApp(
                 )
                 "Run" -> RunPanel(fileName, text, projectContents, runOutput, { runOutput = it }, livePreview, { livePreview = it })
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
-                    val result = when {
-                        command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
-                        command.trim() == "pwd" -> "/AndroidVSCode"
-                        command.trim() == "ls" -> fileName
-                        command.trim() == "clear" -> ""
-                        command.startsWith("echo ") -> command.removePrefix("echo ")
-                        else -> "Unknown command: $command"
+                    val parts = command.trim().split(Regex("\\s+"))
+                    val cmd = parts.firstOrNull().orEmpty()
+                    val target = parts.drop(1).joinToString(" ")
+                    val result = when (cmd) {
+                        "help" -> "help, clear, pwd, ls, cat <file>, touch <file>, rm <file>, echo <text>"
+                        "pwd" -> "/AndroidVSCode/" + projectName
+                        "ls" -> projectFiles.joinToString("\n")
+                        "cat" -> projectContents[target] ?: "file not found: " + target
+                        "touch" -> if (target.isBlank()) "usage: touch <file>" else if (projectFiles.contains(target)) "already exists: " + target else { projectFiles.add(target); projectContents[target] = ""; "created " + target }
+                        "rm" -> if (target.isBlank()) "usage: rm <file>" else if (projectFiles.remove(target)) { projectContents.remove(target); "removed " + target } else "file not found: " + target
+                        "echo" -> target
+                        "clear" -> ""
+                        else -> "Unknown command: " + command
                     }
-                    terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\n" + result + "\n"
-                    terminalCommand = ""
+                    terminalOutput = if (cmd == "clear") "" else terminalOutput + "$ " + command + "\n" + result + "\n"
+                                        terminalCommand = ""
                 }
                 "Git" -> GitPanel(fileName)
                 "Settings" -> SettingsPanel(wordWrap, fontSize, { wordWrap = it }, { fontSize = it })
