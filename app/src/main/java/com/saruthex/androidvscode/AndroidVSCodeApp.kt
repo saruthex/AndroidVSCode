@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -109,7 +108,7 @@ fun AndroidVSCodeApp(
                 Tab(selected = true, onClick = {}, text = { Text(fileName) })
             }
 
-            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                 Column(modifier = Modifier.padding(end = 8.dp)) {
                     for (line in 1..lineCount) {
                         Text(line.toString(), color = LineColor)
