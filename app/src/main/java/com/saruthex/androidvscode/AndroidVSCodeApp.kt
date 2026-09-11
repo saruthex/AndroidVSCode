@@ -5,6 +5,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.NavigationBar
@@ -38,9 +43,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val Bg = Color(0xFF1E1E1E)
-private val Panel = Color(0xFF252526)
-private val Blue = Color(0xFF007ACC)
+private val Bg = Color(0xFF111318)
+private val Panel = Color(0xFF1B1F27)
+private val Blue = Color(0xFF4DA3FF)
 private val TextColor = Color(0xFFD4D4D4)
 private val LineColor = Color(0xFF858585)
 
@@ -133,7 +138,7 @@ fun AndroidVSCodeApp(
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
-            TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
+            Surface(color = Panel) {\n            TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
                 tabs.forEachIndexed { index, tabName ->
                     Tab(
                         selected = activeTab == index,
@@ -152,7 +157,7 @@ fun AndroidVSCodeApp(
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it; status = "Editing" },
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().weight(1f),
                     textStyle = TextStyle(color = TextColor, fontSize = fontSize.sp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Bg,
@@ -217,7 +222,7 @@ private fun RunPanel(fileName: String, source: String) {
         if (isHtml) {
             Text("HTML LIVE PREVIEW", color = TextColor)
             AndroidView(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().weight(1f),
                 factory = { context ->
                     WebView(context).apply {
                         settings.javaScriptEnabled = true
@@ -272,7 +277,7 @@ private fun GitPanel(fileName: String) {
         Text("Workspace: AndroidVSCode", color = LineColor, modifier = Modifier.padding(top = 6.dp))
         Text("Current file: $fileName", color = TextColor, modifier = Modifier.padding(top = 4.dp))
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Text("Git status UI is ready. Native commit/push requires a Git engine and authenticated remote access.", color = LineColor)
+        Card(colors = CardDefaults.cardColors(containerColor = Bg), modifier = Modifier.padding(top = 8.dp)) {\n            Column(Modifier.padding(12.dp)) {\n                Text("Ready for workspace integration", color = TextColor)\n                Text("Native commit/push needs a local Git engine and authentication.", color = LineColor)\n            }\n        }
     }
 }
 
