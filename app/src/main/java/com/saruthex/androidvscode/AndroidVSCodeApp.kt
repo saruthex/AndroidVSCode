@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
@@ -26,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Switch
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +65,9 @@ fun AndroidVSCodeApp(
     var status by remember { mutableStateOf("Ready") }
     var terminalOutput by remember { mutableStateOf("AndroidVSCode terminal\nType help for commands.\n") }
     var terminalCommand by remember { mutableStateOf("") }
+    var wordWrap by remember { mutableStateOf(true) }
+    var fontSize by remember { mutableStateOf(16) }
+    val recentFiles = remember { mutableStateOf(listOf(fileName)) }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -91,7 +98,7 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(fileName, onNewFile, onOpenFile)
+                "Explorer" -> ExplorerPanel(fileName, recentFiles.value, onNewFile, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
@@ -121,7 +128,7 @@ fun AndroidVSCodeApp(
                     terminalCommand = ""
                 }
                 "Git" -> GitPanel(fileName)
-                "Settings" -> SettingsPanel()
+                "Settings" -> SettingsPanel(wordWrap, fontSize, { wordWrap = it }, { fontSize = it })
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
@@ -139,7 +146,7 @@ fun AndroidVSCodeApp(
                     value = text,
                     onValueChange = { text = it; status = "Editing" },
                     modifier = Modifier.fillMaxSize(),
-                    textStyle = TextStyle(color = TextColor),
+                    textStyle = TextStyle(color = TextColor, fontSize = fontSize.dp.value.let { androidx.compose.ui.unit.sp(it) }),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Bg,
                         unfocusedContainerColor = Bg,
@@ -156,14 +163,16 @@ fun AndroidVSCodeApp(
 }
 
 @Composable
-private fun ExplorerPanel(fileName: String, onNewFile: () -> Unit, onOpenFile: () -> Unit) {
+private fun ExplorerPanel(fileName: String, recentFiles: List<String>, onNewFile: () -> Unit, onOpenFile: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(10.dp)) {
         Text("EXPLORER", color = TextColor)
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         Row {
             Button(onClick = onNewFile) { Text("New File") }
             Button(onClick = onOpenFile, modifier = Modifier.padding(start = 6.dp)) { Text("Open File") }
-            TextButton(onClick = {}) { Text(fileName) }
+        }
+        Text("RECENT FILES", color = LineColor, modifier = Modifier.padding(top = 8.dp))
+        recentFiles.distinct().take(5).forEach { name -> TextButton(onClick = {}) { Text(name) } }
         }
     }
 }
@@ -259,7 +268,12 @@ private fun GitPanel(fileName: String) {
 }
 
 @Composable
-private fun SettingsPanel() {
+private fun SettingsPanel(
+    wordWrap: Boolean,
+    fontSize: Int,
+    onWordWrapChange: (Boolean) -> Unit,
+    onFontSizeChange: (Int) -> Unit
+) {
     var darkMode by remember { mutableStateOf(true) }
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(12.dp)) {
         Text("SETTINGS", color = TextColor)
@@ -267,6 +281,17 @@ private fun SettingsPanel() {
             Text("Dark editor theme", color = TextColor)
             Switch(checked = darkMode, onCheckedChange = { darkMode = it })
         }
-        Text("More themes and editor preferences will be stored in the workspace settings.", color = LineColor)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween) {
+            Text("Word wrap", color = TextColor)
+            Switch(checked = wordWrap, onCheckedChange = onWordWrapChange)
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween) {
+            Text("Font size: $fontSize", color = TextColor)
+            Row {
+                Button(onClick = { if (fontSize > 12) onFontSizeChange(fontSize - 1) }) { Text("-") }
+                Button(onClick = { if (fontSize < 28) onFontSizeChange(fontSize + 1) }, modifier = Modifier.padding(start = 6.dp)) { Text("+") }
+            }
+        }
+        Text("Editor preferences are applied immediately.", color = LineColor)
     }
 }
