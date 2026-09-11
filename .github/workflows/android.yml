@@ -12,8 +12,8 @@ permissions:
 
 jobs:
   build:
+    name: Build APK
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -28,29 +28,23 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android 35 SDK
+      - name: Install Android 35
         run: |
-          yes | sdkmanager --licenses
-          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Install Gradle 8.11.1
-        run: |
-          curl -fsSL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
-          unzip -q /tmp/gradle.zip -d /opt
-          echo "/opt/gradle-8.11.1/bin" >> "$GITHUB_PATH"
-
-      - name: Verify toolchain
-        run: |
-          java -version
-          gradle --version
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
 
       - name: Build debug APK
         run: gradle --no-daemon --stacktrace :app:assembleDebug
 
-      - name: Upload APK
+      - name: Upload debug APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: AndroidVSCode-debug.apk
+          name: AndroidVSCode-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 7
