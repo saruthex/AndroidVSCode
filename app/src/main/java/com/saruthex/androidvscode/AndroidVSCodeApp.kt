@@ -125,7 +125,7 @@ fun AndroidVSCodeApp(
                     },
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-                "Run" -> RunPanel(fileName, text, runOutput, { runOutput = it })
+                "Run" -> RunPanel(fileName, text, projectContents, runOutput, { runOutput = it })
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
                     val result = when {
                         command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
@@ -250,6 +250,7 @@ private fun SearchPanel(
 private fun RunPanel(
     fileName: String,
     source: String,
+    projectContents: Map<String, String>,
     output: String,
     onOutput: (String) -> Unit
 ) {
@@ -257,7 +258,11 @@ private fun RunPanel(
         source.contains("<html", true) ||
         source.contains("<!doctype html", true)
     val isJs = fileName.endsWith(".js", true) || source.contains("AndroidVSCode.log(")
-    val previewHtml = source.replace("href=\"style.css\"", "href=\"data:text/css,body%7Bpadding:24px%7Dh1%7Bcolor:%234DA3FF%7D\"")
+    val css = projectContents["style.css"] ?: ""
+    val js = projectContents["script.js"] ?: ""
+    val previewHtml = source
+        .replace("<link rel=\"stylesheet\" href=\"style.css\">", "<style>" + css + "</style>")
+        .replace("<script src=\"script.js\"></script>", "<script>" + js + "</script>")
 
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
         Text(if (isHtml) "HTML LIVE PREVIEW" else if (isJs) "JAVASCRIPT RUNNER" else "RUN", color = TextColor)
