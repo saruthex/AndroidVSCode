@@ -101,7 +101,10 @@ fun AndroidVSCodeApp(
                     },
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-                "Run" -> RunPanel(fileName, text)\n                "Terminal" -> Text("Terminal is being added after HTML preview.", color = TextColor, modifier = Modifier.padding(12.dp))\n                "Git" -> Text("Git integration comes after workspace support.", color = TextColor, modifier = Modifier.padding(12.dp))\n                else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
+                "Run" -> RunPanel(fileName, text)
+                "Terminal" -> Text("Terminal is being added after HTML preview.", color = TextColor, modifier = Modifier.padding(12.dp))
+                "Git" -> Text("Git integration comes after workspace support.", color = TextColor, modifier = Modifier.padding(12.dp))
+                else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
             TabRow(selectedTabIndex = 0, containerColor = Panel) {
