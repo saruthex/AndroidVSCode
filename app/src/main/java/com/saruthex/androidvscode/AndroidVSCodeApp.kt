@@ -140,7 +140,7 @@ fun AndroidVSCodeApp(
 
             Surface(color = Panel) {
                 TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
-                tabs.forEachIndexed { index, tabName ->
+                    tabs.forEachIndexed { index, tabName ->
                     Tab(
                         selected = activeTab == index,
                         onClick = { activeTab = index; status = "Tab: $tabName" },
