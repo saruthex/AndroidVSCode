@@ -11,6 +11,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import java.io.OutputStreamWriter
+import android.provider.OpenableColumns
 
 private val VsCodeDark = darkColorScheme(
     primary = Color(0xFF3794FF),
@@ -93,14 +94,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun writeDocument(uri: Uri, content: String) {
-        contentResolver.openOutputStream(uri, "wt")?.use { stream ->
-            OutputStreamWriter(stream).use { writer ->
-                writer.write(content)
-            }
+        contentResolver.openOutputStream(uri, "w")?.bufferedWriter()?.use { writer ->
+            writer.write(content)
+            writer.flush()
         }
     }
 
     private fun queryDisplayName(uri: Uri): String? {
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (index >= 0 && cursor.moveToFirst()) return cursor.getString(index)
+        }
         return uri.lastPathSegment?.substringAfterLast('/')?.substringAfterLast(':')
     }
 }
