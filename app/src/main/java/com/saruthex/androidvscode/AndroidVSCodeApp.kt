@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,7 +78,7 @@ fun AndroidVSCodeApp(
         },
         bottomBar = {
             NavigationBar(containerColor = Panel) {
-                listOf("Explorer", "Search", "Git", "Run", "Terminal").forEach { item ->
+                listOf("Explorer", "Search", "Run", "Terminal", "Git", "Settings").forEach { item ->
                     NavigationBarItem(
                         selected = active == item,
                         onClick = { active = item },
@@ -110,8 +111,8 @@ fun AndroidVSCodeApp(
                 "Run" -> RunPanel(fileName, text)
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
                     val result = when {
-                        command.trim() == "help" -> "help, clear, pwd, echo <text>"
-                        command.trim() == "pwd" -> "/AndroidVSCode"
+                        command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
+                        command.trim() == "pwd" -> "/AndroidVSCode"\n                        command.trim() == "ls" -> fileName
                         command.trim() == "clear" -> ""
                         command.startsWith("echo ") -> command.removePrefix("echo ")
                         else -> "Unknown command: $command"
@@ -119,7 +120,7 @@ fun AndroidVSCodeApp(
                     terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\\n" + result + "\\n"
                     terminalCommand = ""
                 }
-                "Git" -> Text("Git integration comes after workspace support.", color = TextColor, modifier = Modifier.padding(12.dp))
+                "Git" -> GitPanel(fileName)\n                "Settings" -> SettingsPanel()
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
@@ -241,5 +242,30 @@ private fun TerminalPanel(
                 modifier = Modifier.padding(start = 6.dp)
             ) { Text("Run") }
         }
+    }
+}
+
+
+@Composable
+private fun GitPanel(fileName: String) {
+    Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(12.dp)) {
+        Text("SOURCE CONTROL", color = TextColor)
+        Text("Workspace: AndroidVSCode", color = LineColor, modifier = Modifier.padding(top = 6.dp))
+        Text("Current file: $fileName", color = TextColor, modifier = Modifier.padding(top = 4.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text("Git status UI is ready. Native commit/push requires a Git engine and authenticated remote access.", color = LineColor)
+    }
+}
+
+@Composable
+private fun SettingsPanel() {
+    var darkMode by remember { mutableStateOf(true) }
+    Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(12.dp)) {
+        Text("SETTINGS", color = TextColor)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween) {
+            Text("Dark editor theme", color = TextColor)
+            Switch(checked = darkMode, onCheckedChange = { darkMode = it })
+        }
+        Text("More themes and editor preferences will be stored in the workspace settings.", color = LineColor)
     }
 }
