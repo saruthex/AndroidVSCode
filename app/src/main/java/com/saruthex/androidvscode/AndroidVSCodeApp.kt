@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -65,6 +66,8 @@ fun AndroidVSCodeApp(
     var status by remember { mutableStateOf("Ready") }
     var terminalOutput by remember { mutableStateOf("AndroidVSCode terminal\nType help for commands.\n") }
     var terminalCommand by remember { mutableStateOf("") }
+    val tabs = remember { mutableStateListOf(fileName) }
+    var activeTab by remember { mutableStateOf(0) }
     var wordWrap by remember { mutableStateOf(true) }
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
@@ -76,7 +79,7 @@ fun AndroidVSCodeApp(
             TopAppBar(
                 title = { Text("AndroidVSCode") },
                 actions = {
-                    Button(onClick = onOpenFile, modifier = Modifier.padding(end = 6.dp)) { Text("Open") }
+                    Button(onClick = { if (!tabs.contains(fileName)) tabs.add(fileName); onOpenFile() }, modifier = Modifier.padding(end = 6.dp)) { Text("Open") }
                     Button(onClick = { onSaveFile(fileName, text); status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Panel)
@@ -132,8 +135,14 @@ fun AndroidVSCodeApp(
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
-            TabRow(selectedTabIndex = 0, containerColor = Panel) {
-                Tab(selected = true, onClick = {}, text = { Text(fileName) })
+            TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
+                tabs.forEachIndexed { index, tabName ->
+                    Tab(
+                        selected = activeTab == index,
+                        onClick = { activeTab = index; status = "Tab: $tabName" },
+                        text = { Text(if (tabName == fileName) "$tabName •" else tabName) }
+                    )
+                }
             }
 
             Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
