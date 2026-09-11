@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.LocalTextStyle
 import androidx.compose.ui.unit.dp
 
 private val Bg = Color(0xFF1E1E1E)
@@ -69,7 +68,7 @@ fun AndroidVSCodeApp() {
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxSize().padding(8.dp),
-                textStyle = LocalTextStyle.current.copy(color = Color(0xFFD4D4D4)),
+                textStyle = androidx.compose.ui.text.TextStyle(color = Color(0xFFD4D4D4)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Bg,
                     unfocusedContainerColor = Bg,
