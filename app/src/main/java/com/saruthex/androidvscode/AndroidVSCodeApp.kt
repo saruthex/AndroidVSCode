@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -72,6 +73,7 @@ fun AndroidVSCodeApp(
     var projectName by remember { mutableStateOf("MyProject") }
     val projectFiles = remember { mutableStateListOf("index.html", "style.css", "script.js") }
     var activeProjectFile by remember { mutableStateOf("index.html") }
+    val projectContents = remember { mutableStateMapOf("index.html" to "<!DOCTYPE html>\n<html><head><title>My Project</title><link rel=\"stylesheet\" href=\"style.css\"></head><body><h1>Hello AndroidVSCode!</h1><script src=\"script.js\"></script></body></html>", "style.css" to "body { padding: 24px; }\nh1 { color: #4DA3FF; }", "script.js" to "console.log(\"Project started!\");") }
     var wordWrap by remember { mutableStateOf(true) }
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
@@ -86,7 +88,7 @@ fun AndroidVSCodeApp(
                 title = { Text("AndroidVSCode") },
                 actions = {
                     Button(onClick = { if (!tabs.contains(fileName)) tabs.add(fileName); onOpenFile() }, modifier = Modifier.padding(end = 6.dp)) { Text("Open") }
-                    Button(onClick = { onSaveFile(fileName, text); status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
+                    Button(onClick = { onSaveFile(fileName, text); projectContents[activeProjectFile] = text; status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Panel)
             )
@@ -107,7 +109,7 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; status = "Selected: $selected" }, onNewFile, onOpenFile)
+                "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; fileName = selected; text = projectContents[selected] ?: ""; if (!tabs.contains(selected)) tabs.add(selected); activeTab = tabs.indexOf(selected); status = "Opened: $selected" }, onNewFile, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
@@ -161,7 +163,7 @@ fun AndroidVSCodeApp(
                 }
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it; status = "Editing" },
+                    onValueChange = { text = it; projectContents[activeProjectFile] = it; status = "Editing" },
                     modifier = Modifier.fillMaxSize().weight(1f),
                     textStyle = TextStyle(color = TextColor, fontSize = fontSize.sp),
                     colors = OutlinedTextFieldDefaults.colors(
