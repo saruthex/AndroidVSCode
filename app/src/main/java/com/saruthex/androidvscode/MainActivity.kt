@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import android.provider.Settings
+import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +31,8 @@ class MainActivity : ComponentActivity() {
     private var pendingName = "untitled.txt"
     private var pendingContent = ""
 
+    private val prefs by lazy { getSharedPreferences("androidvscode", Context.MODE_PRIVATE) }
+
     private val openFileLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) openDocument(uri)
@@ -47,6 +51,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (fileName.value == null) {
+            fileName.value = prefs.getString("last_file_name", "untitled.txt")
+            fileContent.value = prefs.getString("last_file_content", "")
+            fileId.value += 1
+        }
         setContent {
             MaterialTheme(colorScheme = VsCodeDark) {
                 AndroidVSCodeApp(
@@ -78,6 +87,7 @@ class MainActivity : ComponentActivity() {
         currentUri = uri
         fileName.value = queryDisplayName(uri) ?: "opened-file.txt"
         fileContent.value = content
+        rememberRecentFile(fileName.value ?: "opened-file.txt", content)
         fileId.value += 1
     }
 
@@ -91,6 +101,7 @@ class MainActivity : ComponentActivity() {
         } else {
             writeDocument(uri, content)
             fileContent.value = content
+            rememberRecentFile(name, content)
         }
     }
 
@@ -99,6 +110,13 @@ class MainActivity : ComponentActivity() {
             writer.write(content)
             writer.flush()
         }
+    }
+
+    private fun rememberRecentFile(name: String, content: String) {
+        prefs.edit()
+            .putString("last_file_name", name)
+            .putString("last_file_content", content)
+            .apply()
     }
 
     private fun queryDisplayName(uri: Uri): String? {
