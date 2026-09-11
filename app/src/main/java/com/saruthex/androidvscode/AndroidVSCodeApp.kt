@@ -227,10 +227,12 @@ private fun RunPanel(
     val isHtml = fileName.endsWith(".html", true) ||
         source.contains("<html", true) ||
         source.contains("<!doctype html", true)
-    val isJs = fileName.endsWith(".js", true)
+    val isJs = fileName.endsWith(".js", true) || source.contains("AndroidVSCode.log(")
 
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
         Text(if (isHtml) "HTML LIVE PREVIEW" else if (isJs) "JAVASCRIPT RUNNER" else "RUN", color = TextColor)
+
+        Button(onClick = { onOutput("Running $fileName") }, modifier = Modifier.padding(bottom = 6.dp)) { Text("Run / Refresh") }
 
         if (isHtml) {
             AndroidView(
@@ -253,6 +255,7 @@ private fun RunPanel(
                         settings.javaScriptEnabled = true
                         webViewClient = WebViewClient()
                         addJavascriptInterface(JsConsole(onOutput), "AndroidVSCode")
+                        evaluateJavascript("window.console = { log: function(m) { AndroidVSCode.log(String(m)); } };", null)
                     }
                 },
                 update = { webView ->
