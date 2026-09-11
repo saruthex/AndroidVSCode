@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -43,6 +46,7 @@ private val LineColor = Color(0xFF858585)
 @Composable
 fun AndroidVSCodeApp(
     onOpenFile: () -> Unit,
+    onNewFile: () -> Unit,
     onSaveFile: (String, String) -> Unit,
     openedFileName: String?,
     openedFileContent: String?,
@@ -55,6 +59,8 @@ fun AndroidVSCodeApp(
     var replaceQuery by remember { mutableStateOf("") }
     var replaceMode by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Ready") }
+    var terminalOutput by remember { mutableStateOf("AndroidVSCode terminal\nType help for commands.\n") }
+    var terminalCommand by remember { mutableStateOf("") }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -85,7 +91,7 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(fileName, onOpenFile)
+                "Explorer" -> ExplorerPanel(fileName, onNewFile, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
@@ -102,7 +108,17 @@ fun AndroidVSCodeApp(
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
                 "Run" -> RunPanel(fileName, text)
-                "Terminal" -> Text("Terminal is being added after HTML preview.", color = TextColor, modifier = Modifier.padding(12.dp))
+                "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
+                    val result = when {
+                        command.trim() == "help" -> "help, clear, pwd, echo <text>"
+                        command.trim() == "pwd" -> "/AndroidVSCode"
+                        command.trim() == "clear" -> ""
+                        command.startsWith("echo ") -> command.removePrefix("echo ")
+                        else -> "Unknown command: $command"
+                    }
+                    terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\\n" + result + "\\n"
+                    terminalCommand = ""
+                }
                 "Git" -> Text("Git integration comes after workspace support.", color = TextColor, modifier = Modifier.padding(12.dp))
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
@@ -138,12 +154,13 @@ fun AndroidVSCodeApp(
 }
 
 @Composable
-private fun ExplorerPanel(fileName: String, onOpenFile: () -> Unit) {
+private fun ExplorerPanel(fileName: String, onNewFile: () -> Unit, onOpenFile: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(10.dp)) {
         Text("EXPLORER", color = TextColor)
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         Row {
-            Button(onClick = onOpenFile) { Text("Open File") }
+            Button(onClick = onNewFile) { Text("New File") }
+            Button(onClick = onOpenFile, modifier = Modifier.padding(start = 6.dp)) { Text("Open File") }
             TextButton(onClick = {}) { Text(fileName) }
         }
     }
@@ -194,6 +211,35 @@ private fun RunPanel(fileName: String, source: String) {
         } else {
             Text("Run currently supports HTML files.", color = TextColor)
             Text("Open an .html file and tap Run.", color = LineColor)
+        }
+    }
+}
+
+
+@Composable
+private fun TerminalPanel(
+    output: String,
+    command: String,
+    onCommandChange: (String) -> Unit,
+    onExecute: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth().background(Bg).padding(10.dp)) {
+        Text(
+            output,
+            color = TextColor,
+            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = command,
+                onValueChange = onCommandChange,
+                label = { Text("Command") },
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { if (command.isNotBlank()) onExecute(command) },
+                modifier = Modifier.padding(start = 6.dp)
+            ) { Text("Run") }
         }
     }
 }
