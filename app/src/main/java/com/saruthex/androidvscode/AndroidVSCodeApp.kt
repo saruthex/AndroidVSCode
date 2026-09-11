@@ -280,7 +280,8 @@ private fun RunPanel(
     val isJs = fileName.endsWith(".js", true) || source.contains("AndroidVSCode.log(")
     val css = projectContents["style.css"] ?: ""
     val js = projectContents["script.js"] ?: ""
-    val previewHtml = source
+    val previewSource = if (fileName.endsWith(".html", true)) source else (projectContents["index.html"] ?: source)
+    val previewHtml = previewSource
         .replace("<link rel=\"stylesheet\" href=\"style.css\">", "<style>" + css + "</style>")
         .replace("<script src=\"script.js\"></script>", "<script>" + js + "</script>")
 
