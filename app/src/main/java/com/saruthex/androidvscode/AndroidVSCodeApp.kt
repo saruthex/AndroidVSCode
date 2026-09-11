@@ -71,6 +71,7 @@ fun AndroidVSCodeApp(
     var activeTab by remember { mutableStateOf(0) }
     var projectName by remember { mutableStateOf("MyProject") }
     val projectFiles = remember { mutableStateListOf("index.html", "style.css", "script.js") }
+    var activeProjectFile by remember { mutableStateOf("index.html") }
     var wordWrap by remember { mutableStateOf(true) }
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
@@ -106,7 +107,7 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(projectName, projectFiles, fileName, recentFiles.value, { name -> projectName = name }, onNewFile, onOpenFile)
+                "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; status = "Selected: $selected" }, onNewFile, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
@@ -185,9 +186,10 @@ fun AndroidVSCodeApp(
 private fun ExplorerPanel(
     projectName: String,
     projectFiles: List<String>,
-    fileName: String,
+    activeProjectFile: String,
     recentFiles: List<String>,
     onProjectNameChange: (String) -> Unit,
+    onSelectFile: (String) -> Unit,
     onNewFile: () -> Unit,
     onOpenFile: () -> Unit
 ) {
@@ -203,7 +205,9 @@ private fun ExplorerPanel(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         Text("PROJECT FILES", color = LineColor)
         projectFiles.forEach { name ->
-            Text("• $name", color = if (name == fileName) Blue else TextColor, modifier = Modifier.padding(vertical = 2.dp))
+            TextButton(onClick = { onSelectFile(name) }) {
+                Text("• $name", color = if (name == activeProjectFile) Blue else TextColor)
+            }
         }
         Row(modifier = Modifier.padding(top = 6.dp)) {
             Button(onClick = onNewFile) { Text("New File") }
