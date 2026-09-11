@@ -130,7 +130,7 @@ fun AndroidVSCodeApp(
                         command.startsWith("echo ") -> command.removePrefix("echo ")
                         else -> "Unknown command: $command"
                     }
-                    terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\\n" + result + "\\n"
+                    terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\n" + result + "\n"
                     terminalCommand = ""
                 }
                 "Git" -> GitPanel(fileName)
@@ -138,7 +138,8 @@ fun AndroidVSCodeApp(
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
-            Surface(color = Panel) {\n            TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
+            Surface(color = Panel) {
+                TabRow(selectedTabIndex = activeTab.coerceIn(0, maxOf(0, tabs.size - 1)), containerColor = Panel) {
                 tabs.forEachIndexed { index, tabName ->
                     Tab(
                         selected = activeTab == index,
