@@ -79,6 +79,8 @@ fun AndroidVSCodeApp(
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
     var showEditor by remember { mutableStateOf(true) }
     var runOutput by remember { mutableStateOf("Ready to run HTML/JavaScript") }
+    var livePreview by remember { mutableStateOf(false) }
+    var isDirty by remember { mutableStateOf(false) }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -125,7 +127,7 @@ fun AndroidVSCodeApp(
                     },
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-                "Run" -> RunPanel(fileName, text, projectContents, runOutput, { runOutput = it })
+                "Run" -> RunPanel(fileName, text, projectContents, runOutput, { runOutput = it }, livePreview, { livePreview = it })
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
                     val result = when {
                         command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
@@ -252,7 +254,9 @@ private fun RunPanel(
     source: String,
     projectContents: Map<String, String>,
     output: String,
-    onOutput: (String) -> Unit
+    onOutput: (String) -> Unit,
+    livePreview: Boolean,
+    onLivePreviewChange: (Boolean) -> Unit
 ) {
     val isHtml = fileName.endsWith(".html", true) ||
         source.contains("<html", true) ||
@@ -267,7 +271,12 @@ private fun RunPanel(
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
         Text(if (isHtml) "HTML LIVE PREVIEW" else if (isJs) "JAVASCRIPT RUNNER" else "RUN", color = TextColor)
 
-        Button(onClick = { onOutput("Running $fileName") }, modifier = Modifier.padding(bottom = 6.dp)) { Text("Run / Refresh") }
+        Row(modifier = Modifier.padding(bottom = 6.dp)) {
+            Button(onClick = { onOutput("Running $fileName") }) { Text("Run / Refresh") }
+            TextButton(onClick = { onLivePreviewChange(!livePreview) }) {
+                Text(if (livePreview) "Live ON" else "Live OFF")
+            }
+        }
 
         if (isHtml) {
             AndroidView(
