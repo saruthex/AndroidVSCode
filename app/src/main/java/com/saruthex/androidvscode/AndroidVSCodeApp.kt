@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
@@ -29,7 +26,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Switch
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 private val Bg = Color(0xFF1E1E1E)
 private val Panel = Color(0xFF252526)
@@ -71,6 +68,7 @@ fun AndroidVSCodeApp(
     var wordWrap by remember { mutableStateOf(true) }
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
+    var showEditor by remember { mutableStateOf(true) }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -145,7 +143,7 @@ fun AndroidVSCodeApp(
                 }
             }
 
-            Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            if (showEditor) Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                 Column(modifier = Modifier.padding(end = 8.dp)) {
                     for (line in 1..lineCount) {
                         Text(line.toString(), color = LineColor)
@@ -155,7 +153,7 @@ fun AndroidVSCodeApp(
                     value = text,
                     onValueChange = { text = it; status = "Editing" },
                     modifier = Modifier.fillMaxSize(),
-                    textStyle = TextStyle(color = TextColor, fontSize = fontSize.dp.value.let { androidx.compose.ui.unit.sp(it) }),
+                    textStyle = TextStyle(color = TextColor, fontSize = fontSize.sp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Bg,
                         unfocusedContainerColor = Bg,
@@ -166,7 +164,10 @@ fun AndroidVSCodeApp(
             }
 
             HorizontalDivider()
-            Text("$status  •  $lineCount lines", color = LineColor, modifier = Modifier.padding(6.dp))
+            Row(modifier = Modifier.fillMaxWidth().padding(6.dp)) {
+                Text("$status  •  $lineCount lines", color = LineColor, modifier = Modifier.weight(1f))
+                TextButton(onClick = { showEditor = !showEditor }) { Text(if (showEditor) "Focus" else "Show Editor") }
+            }
         }
     }
 }
