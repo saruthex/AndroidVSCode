@@ -111,7 +111,17 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; fileName = selected; text = projectContents[selected] ?: ""; if (!tabs.contains(selected)) tabs.add(selected); activeTab = tabs.indexOf(selected); status = "Opened: $selected" }, onNewFile, onOpenFile)
+                "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; fileName = selected; text = projectContents[selected] ?: ""; if (!tabs.contains(selected)) tabs.add(selected); activeTab = tabs.indexOf(selected); status = "Opened: $selected" }, {
+                    val candidate = "untitled" + (projectFiles.size + 1) + ".txt"
+                    projectFiles.add(candidate)
+                    projectContents[candidate] = ""
+                    activeProjectFile = candidate
+                    fileName = candidate
+                    text = ""
+                    if (!tabs.contains(candidate)) tabs.add(candidate)
+                    activeTab = tabs.indexOf(candidate)
+                    status = "Created: " + candidate
+                }, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
