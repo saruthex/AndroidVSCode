@@ -90,7 +90,7 @@ fun AndroidVSCodeApp(
                 title = { Text("AndroidVSCode") },
                 actions = {
                     Button(onClick = { if (!tabs.contains(fileName)) tabs.add(fileName); onOpenFile() }, modifier = Modifier.padding(end = 6.dp)) { Text("Open") }
-                    Button(onClick = { onSaveFile(fileName, text); projectContents[activeProjectFile] = text; status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
+                    Button(onClick = { onSaveFile(fileName, text); projectContents[activeProjectFile] = text; isDirty = false; status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Panel)
             )
@@ -150,7 +150,7 @@ fun AndroidVSCodeApp(
                     tabs.forEachIndexed { index, tabName ->
                     Tab(
                         selected = activeTab == index,
-                        onClick = { activeTab = index; status = "Tab: $tabName" },
+                        onClick = { activeTab = index; activeProjectFile = tabName; fileName = tabName; text = projectContents[tabName] ?: text; status = "Tab: $tabName" },
                         text = { Text(if (tabName == fileName) "$tabName •" else tabName) }
                     )
                 }
@@ -165,7 +165,7 @@ fun AndroidVSCodeApp(
                 }
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it; projectContents[activeProjectFile] = it; status = "Editing" },
+                    onValueChange = { text = it; projectContents[activeProjectFile] = it; isDirty = true; status = "Editing" },
                     modifier = Modifier.fillMaxSize().weight(1f),
                     textStyle = TextStyle(color = TextColor, fontSize = fontSize.sp),
                     colors = OutlinedTextFieldDefaults.colors(
