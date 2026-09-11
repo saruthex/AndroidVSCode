@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
@@ -112,7 +111,8 @@ fun AndroidVSCodeApp(
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
                     val result = when {
                         command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
-                        command.trim() == "pwd" -> "/AndroidVSCode"\n                        command.trim() == "ls" -> fileName
+                        command.trim() == "pwd" -> "/AndroidVSCode"
+                        command.trim() == "ls" -> fileName
                         command.trim() == "clear" -> ""
                         command.startsWith("echo ") -> command.removePrefix("echo ")
                         else -> "Unknown command: $command"
@@ -120,7 +120,8 @@ fun AndroidVSCodeApp(
                     terminalOutput = if (command.trim() == "clear") "" else terminalOutput + "$ " + command + "\\n" + result + "\\n"
                     terminalCommand = ""
                 }
-                "Git" -> GitPanel(fileName)\n                "Settings" -> SettingsPanel()
+                "Git" -> GitPanel(fileName)
+                "Settings" -> SettingsPanel()
                 else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
