@@ -81,6 +81,7 @@ fun AndroidVSCodeApp(
     var runOutput by remember { mutableStateOf("Ready to run HTML/JavaScript") }
     var livePreview by remember { mutableStateOf(false) }
     var isDirty by remember { mutableStateOf(false) }
+    var newFileCounter by remember { mutableStateOf(projectFiles.size + 1) }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -112,7 +113,8 @@ fun AndroidVSCodeApp(
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
                 "Explorer" -> ExplorerPanel(projectName, projectFiles, activeProjectFile, recentFiles.value, { name -> projectName = name }, { selected -> activeProjectFile = selected; fileName = selected; text = projectContents[selected] ?: ""; if (!tabs.contains(selected)) tabs.add(selected); activeTab = tabs.indexOf(selected); status = "Opened: $selected" }, {
-                    val candidate = "untitled" + (projectFiles.size + 1) + ".txt"
+                    val candidate = "untitled" + newFileCounter + ".txt"
+                    newFileCounter += 1
                     projectFiles.add(candidate)
                     projectContents[candidate] = ""
                     activeProjectFile = candidate
