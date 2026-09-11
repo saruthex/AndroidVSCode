@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -110,7 +109,7 @@ fun AndroidVSCodeApp(
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                modifier = Modifier.fillMaxWidth().weight(1f).padding(8.dp),
+                modifier = Modifier.fillMaxWidth().fillMaxSize().padding(8.dp),
                 textStyle = TextStyle(color = TextColor),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Bg,
