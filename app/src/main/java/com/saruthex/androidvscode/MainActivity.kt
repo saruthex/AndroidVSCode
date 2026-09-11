@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(colorScheme = VsCodeDark) {
                 AndroidVSCodeApp(
                     onOpenFile = { openFileLauncher.launch(arrayOf("text/*", "application/json", "application/javascript", "text/html")) },
+                    onNewFile = { currentUri = null; fileName.value = "untitled.txt"; fileContent.value = ""; fileId.value += 1 },
                     onSaveFile = { name, content -> saveDocument(name, content) },
                     openedFileName = fileName.value,
                     openedFileContent = fileContent.value,
