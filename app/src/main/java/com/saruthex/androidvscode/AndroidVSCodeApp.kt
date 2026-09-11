@@ -257,6 +257,7 @@ private fun RunPanel(
         source.contains("<html", true) ||
         source.contains("<!doctype html", true)
     val isJs = fileName.endsWith(".js", true) || source.contains("AndroidVSCode.log(")
+    val previewHtml = source.replace("href=\"style.css\"", "href=\"data:text/css,body%7Bpadding:24px%7Dh1%7Bcolor:%234DA3FF%7D\"")
 
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
         Text(if (isHtml) "HTML LIVE PREVIEW" else if (isJs) "JAVASCRIPT RUNNER" else "RUN", color = TextColor)
@@ -273,7 +274,7 @@ private fun RunPanel(
                     }
                 },
                 update = { webView ->
-                    webView.loadDataWithBaseURL(null, source, "text/html", "UTF-8", null)
+                    webView.loadDataWithBaseURL(null, previewHtml, "text/html", "UTF-8", null)
                 }
             )
         } else if (isJs) {
