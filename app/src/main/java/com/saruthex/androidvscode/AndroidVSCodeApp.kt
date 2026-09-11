@@ -1,8 +1,6 @@
 package com.saruthex.androidvscode
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ private val Bg = Color(0xFF1E1E1E)
 private val Panel = Color(0xFF252526)
 private val Blue = Color(0xFF007ACC)
 private val TextColor = Color(0xFFD4D4D4)
+private val LineColor = Color(0xFF858585)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,24 +46,22 @@ fun AndroidVSCodeApp(
     openedFileId: Long
 ) {
     var active by remember { mutableStateOf("Explorer") }
-    var text by remember(openedFileId) {
-        mutableStateOf(openedFileContent ?: "// Create a new file or open one from your phone\n")
-    }
-    var fileName by remember(openedFileId) {
-        mutableStateOf(openedFileName ?: "untitled.txt")
-    }
+    var text by remember(openedFileId) { mutableStateOf(openedFileContent ?: "") }
+    var fileName by remember(openedFileId) { mutableStateOf(openedFileName ?: "untitled.txt") }
+    var searchQuery by remember { mutableStateOf("") }
+    var replaceQuery by remember { mutableStateOf("") }
+    var replaceMode by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf("Ready") }
+
+    val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("AndroidVSCode") },
                 actions = {
-                    Button(onClick = onOpenFile, modifier = Modifier.padding(end = 8.dp)) {
-                        Text("Open")
-                    }
-                    Button(onClick = { onSaveFile(fileName, text) }, modifier = Modifier.padding(end = 8.dp)) {
-                        Text("Save")
-                    }
+                    Button(onClick = onOpenFile, modifier = Modifier.padding(end = 6.dp)) { Text("Open") }
+                    Button(onClick = { onSaveFile(fileName, text); status = "Saved" }, modifier = Modifier.padding(end = 8.dp)) { Text("Save") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Panel)
             )
@@ -82,63 +80,88 @@ fun AndroidVSCodeApp(
         },
         containerColor = Bg
     ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)
-        ) {
-            if (active == "Explorer") {
-                ExplorerPanel(
-                    fileName = fileName,
-                    onNewFile = {
-                        fileName = "untitled.txt"
-                        text = ""
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
+            when (active) {
+                "Explorer" -> ExplorerPanel(fileName, onOpenFile)
+                "Search" -> SearchPanel(
+                    searchQuery = searchQuery,
+                    replaceQuery = replaceQuery,
+                    replaceMode = replaceMode,
+                    onSearchChange = { searchQuery = it },
+                    onReplaceChange = { replaceQuery = it },
+                    onToggleReplace = { replaceMode = !replaceMode },
+                    onReplaceAll = {
+                        if (searchQuery.isNotEmpty()) {
+                            text = text.replace(searchQuery, replaceQuery)
+                            status = "Replaced all matches"
+                        }
                     },
-                    onOpenFile = onOpenFile
+                    matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-            } else {
-                Text(
-                    "$active tools are coming next. The editor and real Android file open/save are working now.",
-                    color = TextColor,
-                    modifier = Modifier.padding(12.dp)
-                )
+                else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
             TabRow(selectedTabIndex = 0, containerColor = Panel) {
                 Tab(selected = true, onClick = {}, text = { Text(fileName) })
             }
 
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                modifier = Modifier.fillMaxWidth().fillMaxSize().padding(8.dp),
-                textStyle = TextStyle(color = TextColor),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Bg,
-                    unfocusedContainerColor = Bg,
-                    focusedBorderColor = Blue,
-                    unfocusedBorderColor = Color(0xFF3C3C3C)
+            Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(8.dp)) {
+                Column(modifier = Modifier.padding(end = 8.dp)) {
+                    for (line in 1..lineCount) {
+                        Text(line.toString(), color = LineColor)
+                    }
+                }
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it; status = "Editing" },
+                    modifier = Modifier.fillMaxSize(),
+                    textStyle = TextStyle(color = TextColor),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Bg,
+                        unfocusedContainerColor = Bg,
+                        focusedBorderColor = Blue,
+                        unfocusedBorderColor = Color(0xFF3C3C3C)
+                    )
                 )
-            )
+            }
+
+            HorizontalDivider()
+            Text("$status  •  $lineCount lines", color = LineColor, modifier = Modifier.padding(6.dp))
         }
     }
 }
 
 @Composable
-private fun ExplorerPanel(
-    fileName: String,
-    onNewFile: () -> Unit,
-    onOpenFile: () -> Unit
-) {
+private fun ExplorerPanel(fileName: String, onOpenFile: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(10.dp)) {
         Text("EXPLORER", color = TextColor)
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onNewFile) { Text("New File") }
+        Row {
             Button(onClick = onOpenFile) { Text("Open File") }
+            TextButton(onClick = {}) { Text(fileName) }
         }
-        Text(
-            text = fileName,
-            color = TextColor,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).clickable { }
-        )
+    }
+}
+
+@Composable
+private fun SearchPanel(
+    searchQuery: String,
+    replaceQuery: String,
+    replaceMode: Boolean,
+    onSearchChange: (String) -> Unit,
+    onReplaceChange: (String) -> Unit,
+    onToggleReplace: () -> Unit,
+    onReplaceAll: () -> Unit,
+    matchCount: Int
+) {
+    Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(10.dp)) {
+        Text("SEARCH", color = TextColor)
+        OutlinedTextField(searchQuery, onSearchChange, label = { Text("Find") }, modifier = Modifier.fillMaxWidth())
+        Text("$matchCount matches", color = LineColor, modifier = Modifier.padding(top = 4.dp))
+        TextButton(onClick = onToggleReplace) { Text(if (replaceMode) "Hide Replace" else "Replace") }
+        if (replaceMode) {
+            OutlinedTextField(replaceQuery, onReplaceChange, label = { Text("Replace with") }, modifier = Modifier.fillMaxWidth())
+            Button(onClick = onReplaceAll, modifier = Modifier.padding(top = 6.dp)) { Text("Replace All") }
+        }
     }
 }
