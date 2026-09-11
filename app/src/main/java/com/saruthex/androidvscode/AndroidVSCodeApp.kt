@@ -6,7 +6,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -147,6 +146,7 @@ fun AndroidVSCodeApp(
                         text = { Text(if (tabName == fileName) "$tabName •" else tabName) }
                     )
                 }
+            }
             }
 
             if (showEditor) Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
