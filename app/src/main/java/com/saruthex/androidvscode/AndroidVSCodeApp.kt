@@ -73,6 +73,7 @@ fun AndroidVSCodeApp(
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
     var showEditor by remember { mutableStateOf(true) }
+    var runOutput by remember { mutableStateOf("Ready to run HTML/JavaScript") }
 
     val lineCount = maxOf(1, text.count { it == '\n' } + 1)
 
@@ -119,7 +120,7 @@ fun AndroidVSCodeApp(
                     },
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-                "Run" -> RunPanel(fileName, text)
+                "Run" -> RunPanel(fileName, text, runOutput, { runOutput = it })
                 "Terminal" -> TerminalPanel(terminalOutput, terminalCommand, { terminalCommand = it }) { command ->
                     val result = when {
                         command.trim() == "help" -> "help, clear, pwd, ls, echo <text>"
@@ -217,11 +218,21 @@ private fun SearchPanel(
 
 
 @Composable
-private fun RunPanel(fileName: String, source: String) {
+private fun RunPanel(
+    fileName: String,
+    source: String,
+    output: String,
+    onOutput: (String) -> Unit
+) {
+    val isHtml = fileName.endsWith(".html", true) ||
+        source.contains("<html", true) ||
+        source.contains("<!doctype html", true)
+    val isJs = fileName.endsWith(".js", true)
+
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
-        val isHtml = fileName.endsWith(".html", true) || source.contains("<html", true) || source.contains("<!doctype html", true)
+        Text(if (isHtml) "HTML LIVE PREVIEW" else if (isJs) "JAVASCRIPT RUNNER" else "RUN", color = TextColor)
+
         if (isHtml) {
-            Text("HTML LIVE PREVIEW", color = TextColor)
             AndroidView(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 factory = { context ->
@@ -234,13 +245,38 @@ private fun RunPanel(fileName: String, source: String) {
                     webView.loadDataWithBaseURL(null, source, "text/html", "UTF-8", null)
                 }
             )
+        } else if (isJs) {
+            AndroidView(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        webViewClient = WebViewClient()
+                        addJavascriptInterface(JsConsole(onOutput), "AndroidVSCode")
+                    }
+                },
+                update = { webView ->
+                    webView.evaluateJavascript(
+                        "try { " + source + " } catch(e) { AndroidVSCode.log('Error: ' + e.message); }",
+                        null
+                    )
+                }
+            )
+            Text("Output:", color = LineColor)
+            Text(output, color = TextColor, modifier = Modifier.padding(top = 4.dp))
         } else {
-            Text("Run currently supports HTML files.", color = TextColor)
-            Text("Open an .html file and tap Run.", color = LineColor)
+            Text("Supported runners: HTML and JavaScript.", color = TextColor)
+            Text("Open an .html or .js file to run it.", color = LineColor)
         }
     }
 }
 
+private class JsConsole(private val onLog: (String) -> Unit) {
+    @android.webkit.JavascriptInterface
+    fun log(message: String) {
+        onLog(message)
+    }
+}
 
 @Composable
 private fun TerminalPanel(
