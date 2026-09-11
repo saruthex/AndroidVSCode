@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -34,17 +33,7 @@ private val Blue = Color(0xFF007ACC)
 @Composable
 fun AndroidVSCodeApp() {
     var active by remember { mutableStateOf("Explorer") }
-    var text by remember {
-        mutableStateOf(
-            """// Welcome to AndroidVSCode
-// A native mobile development workbench.
-
-fun main() {
-    println("Hello from AndroidVSCode")
-}
-"""
-        )
-    }
+    var text by remember { mutableStateOf("// Welcome to AndroidVSCode\nfun main() {\n    println(\"Hello\")\n}") }
 
     Scaffold(
         topBar = {
@@ -66,27 +55,20 @@ fun main() {
             }
         },
         containerColor = Bg
-    ) { padding ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .background(Bg)
         ) {
             TabRow(selectedTabIndex = 0, containerColor = Panel) {
-                Tab(
-                    selected = true,
-                    onClick = {},
-                    text = { Text("Main.kt") }
-                )
+                Tab(selected = true, onClick = {}, text = { Text("Main.kt") })
             }
-
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
+                modifier = Modifier.fillMaxSize().padding(8.dp),
                 textStyle = LocalTextStyle.current.copy(color = Color(0xFFD4D4D4)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Bg,
