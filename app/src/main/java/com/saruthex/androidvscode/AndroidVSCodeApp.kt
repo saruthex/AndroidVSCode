@@ -152,7 +152,7 @@ fun AndroidVSCodeApp(
                         "ls" -> projectFiles.joinToString("\n")
                         "cat" -> projectContents[target] ?: "file not found: " + target
                         "touch" -> if (target.isBlank()) "usage: touch <file>" else if (projectFiles.contains(target)) "already exists: " + target else { projectFiles.add(target); projectContents[target] = ""; "created " + target }
-                        "rm" -> if (target.isBlank()) "usage: rm <file>" else if (projectFiles.remove(target)) { projectContents.remove(target); "removed " + target } else "file not found: " + target
+                        "rm" -> if (target.isBlank()) "usage: rm <file>" else if (target == activeProjectFile) "cannot remove the active file" else if (projectFiles.remove(target)) { projectContents.remove(target); tabs.remove(target); if (tabs.isNotEmpty()) { activeTab = activeTab.coerceIn(0, tabs.lastIndex); activeProjectFile = tabs[activeTab]; fileName = activeProjectFile; text = projectContents[activeProjectFile] ?: "" }; "removed " + target } else "file not found: " + target
                         "echo" -> target
                         "clear" -> ""
                         else -> "Unknown command: " + command
