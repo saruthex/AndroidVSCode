@@ -150,7 +150,14 @@ fun AndroidVSCodeApp(
                     tabs.forEachIndexed { index, tabName ->
                     Tab(
                         selected = activeTab == index,
-                        onClick = { activeTab = index; activeProjectFile = tabName; fileName = tabName; text = projectContents[tabName] ?: text; status = "Tab: $tabName" },
+                        onClick = {
+                            activeTab = index
+                            activeProjectFile = tabName
+                            fileName = tabName
+                            text = projectContents[tabName] ?: if (tabName == openedFileName) (openedFileContent ?: "") else ""
+                            isDirty = false
+                            status = "Tab: $tabName"
+                        },
                         text = { Text(if (tabName == fileName) "$tabName •" else tabName) }
                     )
                 }
