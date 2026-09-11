@@ -278,7 +278,12 @@ private fun GitPanel(fileName: String) {
         Text("Workspace: AndroidVSCode", color = LineColor, modifier = Modifier.padding(top = 6.dp))
         Text("Current file: $fileName", color = TextColor, modifier = Modifier.padding(top = 4.dp))
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Card(colors = CardDefaults.cardColors(containerColor = Bg), modifier = Modifier.padding(top = 8.dp)) {\n            Column(Modifier.padding(12.dp)) {\n                Text("Ready for workspace integration", color = TextColor)\n                Text("Native commit/push needs a local Git engine and authentication.", color = LineColor)\n            }\n        }
+        Card(colors = CardDefaults.cardColors(containerColor = Bg), modifier = Modifier.padding(top = 8.dp)) {
+            Column(Modifier.padding(12.dp)) {
+                Text("Ready for workspace integration", color = TextColor)
+                Text("Native commit/push needs a local Git engine and authentication.", color = LineColor)
+            }
+        }
     }
 }
 
