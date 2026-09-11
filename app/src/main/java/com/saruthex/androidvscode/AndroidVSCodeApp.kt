@@ -1,6 +1,9 @@
 package com.saruthex.androidvscode
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.viewinterop.AndroidView
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -99,7 +102,7 @@ fun AndroidVSCodeApp(
                     },
                     matchCount = if (searchQuery.isBlank()) 0 else Regex(Regex.escape(searchQuery)).findAll(text).count()
                 )
-                else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
+                "Run" -> RunPanel(fileName, text)\n                "Terminal" -> Text("Terminal is being added after HTML preview.", color = TextColor, modifier = Modifier.padding(12.dp))\n                "Git" -> Text("Git integration comes after workspace support.", color = TextColor, modifier = Modifier.padding(12.dp))\n                else -> Text("$active is planned for Phase 3.", color = TextColor, modifier = Modifier.padding(12.dp))
             }
 
             TabRow(selectedTabIndex = 0, containerColor = Panel) {
@@ -163,6 +166,32 @@ private fun SearchPanel(
         if (replaceMode) {
             OutlinedTextField(replaceQuery, onReplaceChange, label = { Text("Replace with") }, modifier = Modifier.fillMaxWidth())
             Button(onClick = onReplaceAll, modifier = Modifier.padding(top = 6.dp)) { Text("Replace All") }
+        }
+    }
+}
+
+
+@Composable
+private fun RunPanel(fileName: String, source: String) {
+    Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp)) {
+        val isHtml = fileName.endsWith(".html", true) || source.contains("<html", true) || source.contains("<!doctype html", true)
+        if (isHtml) {
+            Text("HTML LIVE PREVIEW", color = TextColor)
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { context ->
+                    WebView(context).apply {
+                        settings.javaScriptEnabled = true
+                        webViewClient = WebViewClient()
+                    }
+                },
+                update = { webView ->
+                    webView.loadDataWithBaseURL(null, source, "text/html", "UTF-8", null)
+                }
+            )
+        } else {
+            Text("Run currently supports HTML files.", color = TextColor)
+            Text("Open an .html file and tap Run.", color = LineColor)
         }
     }
 }
