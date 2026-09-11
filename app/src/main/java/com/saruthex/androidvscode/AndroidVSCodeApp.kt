@@ -132,6 +132,8 @@ fun AndroidVSCodeApp(
                     onReplaceAll = {
                         if (searchQuery.isNotEmpty()) {
                             text = text.replace(searchQuery, replaceQuery)
+                            projectContents[activeProjectFile] = text
+                            isDirty = true
                             status = "Replaced all matches"
                         }
                     },
