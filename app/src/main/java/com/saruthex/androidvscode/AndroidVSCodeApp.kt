@@ -183,7 +183,6 @@ private fun ExplorerPanel(fileName: String, recentFiles: List<String>, onNewFile
         }
         Text("RECENT FILES", color = LineColor, modifier = Modifier.padding(top = 8.dp))
         recentFiles.distinct().take(5).forEach { name -> TextButton(onClick = {}) { Text(name) } }
-        }
     }
 }
 
