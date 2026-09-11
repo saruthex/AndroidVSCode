@@ -69,6 +69,8 @@ fun AndroidVSCodeApp(
     var terminalCommand by remember { mutableStateOf("") }
     val tabs = remember { mutableStateListOf(fileName) }
     var activeTab by remember { mutableStateOf(0) }
+    var projectName by remember { mutableStateOf("MyProject") }
+    val projectFiles = remember { mutableStateListOf("index.html", "style.css", "script.js") }
     var wordWrap by remember { mutableStateOf(true) }
     var fontSize by remember { mutableStateOf(16) }
     val recentFiles = remember { mutableStateOf(listOf(fileName)) }
@@ -104,7 +106,7 @@ fun AndroidVSCodeApp(
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).background(Bg)) {
             when (active) {
-                "Explorer" -> ExplorerPanel(fileName, recentFiles.value, onNewFile, onOpenFile)
+                "Explorer" -> ExplorerPanel(projectName, projectFiles, fileName, recentFiles.value, { name -> projectName = name }, onNewFile, onOpenFile)
                 "Search" -> SearchPanel(
                     searchQuery = searchQuery,
                     replaceQuery = replaceQuery,
@@ -180,16 +182,37 @@ fun AndroidVSCodeApp(
 }
 
 @Composable
-private fun ExplorerPanel(fileName: String, recentFiles: List<String>, onNewFile: () -> Unit, onOpenFile: () -> Unit) {
+private fun ExplorerPanel(
+    projectName: String,
+    projectFiles: List<String>,
+    fileName: String,
+    recentFiles: List<String>,
+    onProjectNameChange: (String) -> Unit,
+    onNewFile: () -> Unit,
+    onOpenFile: () -> Unit
+) {
+    var newName by remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxWidth().background(Panel).padding(10.dp)) {
         Text("EXPLORER", color = TextColor)
+        OutlinedTextField(
+            value = projectName,
+            onValueChange = onProjectNameChange,
+            label = { Text("Project name") },
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
+        )
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Row {
+        Text("PROJECT FILES", color = LineColor)
+        projectFiles.forEach { name ->
+            Text("• $name", color = if (name == fileName) Blue else TextColor, modifier = Modifier.padding(vertical = 2.dp))
+        }
+        Row(modifier = Modifier.padding(top = 6.dp)) {
             Button(onClick = onNewFile) { Text("New File") }
             Button(onClick = onOpenFile, modifier = Modifier.padding(start = 6.dp)) { Text("Open File") }
         }
-        Text("RECENT FILES", color = LineColor, modifier = Modifier.padding(top = 8.dp))
-        recentFiles.distinct().take(5).forEach { name -> TextButton(onClick = {}) { Text(name) } }
+        Text("RECENT FILES", color = LineColor, modifier = Modifier.padding(top = 10.dp))
+        recentFiles.distinct().take(5).forEach { name ->
+            Text("• $name", color = TextColor)
+        }
     }
 }
 
